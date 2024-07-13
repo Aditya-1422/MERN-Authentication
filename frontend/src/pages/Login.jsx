@@ -2,21 +2,26 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { URL } from '../url';
+import {loginInFailure, loginInStart, loginInSuccess}  from '../redux/userSlice.js'
+import { useDispatch, useSelector } from 'react-redux';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [messageStyle, setMessageStyle] = useState('');
-  const [loading, setLoading] = useState(false)
+  // const [loading, setLoading] = useState(false)
+  // const [error,setError] = useState(false);
+  const {loading, error} = useSelector((state) => state.user)
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(''); // Reset message state on submit
 
     try {
-      setLoading(true)
+      // setLoading(true)
+      dispatch(loginInStart());
       const response = await axios.post(`${URL}/api/auth/login`, {
         email,
         password
@@ -29,13 +34,16 @@ const Login = () => {
       setTimeout(() => {
         navigate('/');
       }, 800);
-      setLoading(false)
+      dispatch(loginInSuccess(response.data));
+      // setLoading(false)
     } catch (err) {
-      setLoading(false)
+      dispatch(loginInFailure(err))
+      // setLoading(false)
       console.error('Error:', err);
       setMessage('User does not exists!');
       setMessageStyle('text-red-500');
     }
+    if(error) console.log(error)
   };
 
   return (
