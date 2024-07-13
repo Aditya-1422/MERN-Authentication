@@ -5,12 +5,14 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import About from './pages/About'
 import Profile from './pages/Profile'
+import Header from './components/Header'
 
 
 const App = () => {
   return (
     <BrowserRouter>
-      <Routes>
+        <Header/>
+        <Routes>
         <Route exact path='/' element={<Home/>}/>
         <Route exact path='/login' element={<Login/>}/>
         <Route exact path='/register' element={<Register/>}/>
