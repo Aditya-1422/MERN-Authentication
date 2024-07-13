@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose';
 import authRouter from './router/authRouter.js'
+import cors from 'cors'
 
 dotenv.config({path:'./backend/config.env'})
 const app = express();
@@ -20,6 +21,10 @@ app.listen(process.env.PORT,()=>{
 })
 
 app.use(express.json())
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+}))
 
 app.use("/api/auth",authRouter)
 
