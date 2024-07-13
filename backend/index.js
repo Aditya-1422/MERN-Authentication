@@ -1,6 +1,7 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose';
+import authRouter from './router/authRouter.js'
 
 dotenv.config({path:'./backend/config.env'})
 const app = express();
@@ -17,3 +18,7 @@ app.listen(process.env.PORT,()=>{
     connectDb();
     console.log(`Server is working : ${process.env.PORT}`)
 })
+
+app.use(express.json())
+
+app.use("/api/auth",authRouter)
