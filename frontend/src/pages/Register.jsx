@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { URL } from '../url';
+import OAuth from '../components/OAuth';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -77,6 +78,7 @@ const Register = () => {
         >
           {loading ? 'Loading...' : 'Register'}
         </button>
+        <OAuth/>
       </form>
       {message && <p className={`${messageStyle} mt-5`}>{message}</p>}
       <div className='flex gap-2 mt-5'>

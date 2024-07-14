@@ -23,7 +23,7 @@ export const login = async (req,res,next) => {
     const {email, password} = req.body
     try {
         const user = await User.findOne({email})
-        if(!user) next(errorHandler(409,"User Already Exists!!!"));
+        if(!user) next(errorHandler(409,"User does not Exists!!!"));
         const comparePassword = bcrypt.compareSync(password,user.password)
         if(!comparePassword) next(errorHandler(401,"Wrong Credentials!!!"));
         const token = jwt.sign({id:user._id},process.env.SEC,)
@@ -32,3 +32,37 @@ export const login = async (req,res,next) => {
         next(errorHandler(500,"Something went wrong!!"))
     }
 }
+
+
+export const googlelogin = async (req, res, next) => {
+    try {
+      const user = await User.findOne({ email: req.body.email }); // Use correct query
+  
+      if (user) {
+        const token = jwt.sign({ id: user._id }, process.env.SEC);
+  
+        const { password, ...rest } = user._doc;
+        const expiryDate = new Date(Date.now() + 3600000); // 1 hour
+  
+        res.cookie("access_token", token, { httpOnly: true, expires: expiryDate }).status(200).json(rest);
+      } else {
+        const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+        const genHashedPassword = bcrypt.hashSync(generatedPassword, 10);
+        const newUser = new User({
+          username: req.body.username.split(" ").join("").toLowerCase() + Math.floor(Math.random() * 10000).toString(),
+          email: req.body.email,
+          password: genHashedPassword,
+          profilePicture: req.body.photo,
+        });
+        await newUser.save();
+  
+        const token = jwt.sign({ id: newUser._id }, process.env.SEC);
+        const { password, ...rest } = newUser._doc;
+        const expiryDate = new Date(Date.now() + 3600000); // 1 hour
+  
+        res.cookie("access_token", token, { httpOnly: true, expires: expiryDate }).status(200).json(rest);
+      }
+    } catch (error) {
+      next(errorHandler(500, "Something went wrong!!!"));
+    }
+  };

@@ -1,7 +1,6 @@
 import {combineReducers, configureStore} from '@reduxjs/toolkit'
 import userReducer from './userSlice.js'
 import { persistReducer } from 'redux-persist'
-import { version } from 'react'
 import storage from 'redux-persist/lib/storage'
 import persistStore from 'redux-persist/es/persistStore'
 

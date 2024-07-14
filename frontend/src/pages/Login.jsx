@@ -4,6 +4,7 @@ import axios from 'axios';
 import { URL } from '../url';
 import {loginInFailure, loginInStart, loginInSuccess}  from '../redux/userSlice.js'
 import { useDispatch, useSelector } from 'react-redux';
+import OAuth from '../components/OAuth.jsx';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -74,6 +75,7 @@ const Login = () => {
         >
           {loading ? 'Loading...' : 'Login'}
         </button>
+        <OAuth/>
       </form>
       {message && <p className={`${messageStyle} mt-5`}>{message}</p>}
       <div className='flex gap-2 mt-5'>
