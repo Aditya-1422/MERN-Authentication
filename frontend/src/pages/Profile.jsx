@@ -1,23 +1,22 @@
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
+import axios from 'axios';
 import { app } from '../firebase.js';
+import { URL } from '../url.js';
+import { updateUserStart, updateUserSuccess, updateUserFailure } from '../redux/userSlice.js';
 
 const Profile = () => {
+  const dispatch = useDispatch();
   const fileRef = useRef(null);
   const [image, setImage] = useState(undefined);
   const [imagePercentage, setImagePercentage] = useState(0);
   const [formData, setFormData] = useState({});
   const [imageError, setImageError] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [message, setMessage] = useState(null);
 
-  const currentUser = useSelector((state) => state.user.currentUser);
-
-  useEffect(() => {
-    console.log("Current User Profile Picture:", currentUser.profilePicture);
-    if (image) {
-      handleFileUpload(image);
-    }
-  }, [image, currentUser.profilePicture]);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
 
   const handleFileUpload = useCallback(async (image) => {
     const storage = getStorage(app);
@@ -36,20 +35,51 @@ const Profile = () => {
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          console.log("Download URL:", downloadURL);
           setFormData((prevFormData) => ({ ...prevFormData, profilePicture: downloadURL }));
         });
       }
     );
   }, []);
 
+  useEffect(() => {
+    if (image) {
+      handleFileUpload(image);
+    }
+  }, [image, handleFileUpload]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
+    dispatch(updateUserStart());
+    try {
+      const response = await axios.post(`${URL}/api/user/update/${currentUser._id}`, {
+        username: formData.username || currentUser.username,
+        email: formData.email || currentUser.email,
+        password: formData.password,
+        profilePicture: formData.profilePicture || currentUser.profilePicture
+      }, {
+        withCredentials: true
+      });
+
+      if (response.data.success === false) {
+        dispatch(updateUserFailure(response.data));
+        setMessage('Something went wrong!');
+        setTimeout(() => setMessage(null), 500);
+        return;
+      }
+
+      dispatch(updateUserSuccess(response.data));
+      setUpdateSuccess(true);
+      setMessage('User updated successfully!');
+      setTimeout(() => setMessage(null), 500);
+    } catch (error) {
+      dispatch(updateUserFailure(error));
+      setMessage('Something went wrong!');
+      setTimeout(() => setMessage(null), 500);
+    }
   };
 
   return (
@@ -105,8 +135,11 @@ const Profile = () => {
           className='bg-slate-100 rounded-lg p-3'
           onChange={handleChange}
         />
-        <button className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'>
-          Update
+        <button
+          className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
+          disabled={loading}
+        >
+          {loading ? 'Loading...' : 'Update'}
         </button>
       </form>
       <div className='flex justify-between mt-5'>
@@ -117,6 +150,9 @@ const Profile = () => {
           Log out
         </span>
       </div>
+      <p className={`mt-5 ${error ? 'text-red-700' : 'text-green-700'}`}>
+        {message}
+      </p>
     </div>
   );
 };

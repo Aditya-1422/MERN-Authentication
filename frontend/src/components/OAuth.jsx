@@ -4,9 +4,11 @@ import axios from 'axios';
 import { URL } from '../url.js';
 import { useDispatch } from 'react-redux';
 import { loginInSuccess } from '../redux/userSlice';
+import { useNavigate } from 'react-router-dom';
 
 const OAuth = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleGoogleClick = async () => {
     try {
@@ -29,6 +31,9 @@ const OAuth = () => {
 
       // Dispatching login success with user data
       dispatch(loginInSuccess(response.data));
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
     } catch (error) {
       console.log("Could not log in with Google!!! ", error);
     }

@@ -2,7 +2,9 @@ import express from 'express'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose';
 import authRouter from './router/authRouter.js'
+import userRouter from './router/userRouter.js'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 
 dotenv.config({path:'./backend/config.env'})
 const app = express();
@@ -21,12 +23,14 @@ app.listen(process.env.PORT,()=>{
 })
 
 app.use(express.json())
+app.use(cookieParser())
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true,
 }))
 
 app.use("/api/auth",authRouter)
+app.use("/api/user",userRouter)
 
 app.use((err,req,res,next)=>{
     const statusCode = err.statusCode || 500;

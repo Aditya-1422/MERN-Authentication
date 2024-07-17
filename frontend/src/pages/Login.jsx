@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { URL } from '../url';
-import {loginInFailure, loginInStart, loginInSuccess}  from '../redux/userSlice.js'
+import { loginInFailure, loginInStart, loginInSuccess } from '../redux/userSlice.js';
 import { useDispatch, useSelector } from 'react-redux';
 import OAuth from '../components/OAuth.jsx';
 
@@ -11,17 +11,15 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [messageStyle, setMessageStyle] = useState('');
-  // const [loading, setLoading] = useState(false)
-  // const [error,setError] = useState(false);
-  const {loading, error} = useSelector((state) => state.user)
+  const { loading } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(''); // Reset message state on submit
 
     try {
-      // setLoading(true)
       dispatch(loginInStart());
       const response = await axios.post(`${URL}/api/auth/login`, {
         email,
@@ -29,22 +27,18 @@ const Login = () => {
       }, {
         withCredentials: true
       });
-      console.log(response.data)
-      setMessage('User loginned successfully!');
+      dispatch(loginInSuccess(response.data));
+      setMessage('User logged in successfully!');
       setMessageStyle('text-green-500');
       setTimeout(() => {
-        navigate('/');
-      }, 800);
-      dispatch(loginInSuccess(response.data));
-      // setLoading(false)
+        navigate('/home');
+      }, 500); 
     } catch (err) {
-      dispatch(loginInFailure(err))
-      // setLoading(false)
+      dispatch(loginInFailure(err));
       console.error('Error:', err);
-      setMessage('User does not exists!');
+      setMessage('User does not exist!');
       setMessageStyle('text-red-500');
     }
-    if(error) console.log(error)
   };
 
   return (
