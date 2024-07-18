@@ -4,7 +4,8 @@ import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/
 import axios from 'axios';
 import { app } from '../firebase.js';
 import { URL } from '../url.js';
-import { updateUserStart, updateUserSuccess, updateUserFailure } from '../redux/userSlice.js';
+import { updateUserStart, updateUserSuccess, updateUserFailure, logout } from '../redux/userSlice.js';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -15,6 +16,8 @@ const Profile = () => {
   const [imageError, setImageError] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [message, setMessage] = useState(null);
+  const navigate = useNavigate();
+
 
   const { currentUser, loading, error } = useSelector((state) => state.user);
 
@@ -82,6 +85,19 @@ const Profile = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const response = await axios.get(`${URL}/api/auth/logout`, { withCredentials: true });
+      dispatch(logout())
+      navigate('/login');
+    } catch (error) {
+      setMessage("User has not logged out!!");
+      setTimeout(() => {
+        setMessage('');
+      }, 500);
+    }
+  };
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
@@ -146,7 +162,7 @@ const Profile = () => {
         <span className='text-red-700 cursor-pointer'>
           Delete Account
         </span>
-        <span className='text-red-700 cursor-pointer'>
+        <span className='text-red-700 cursor-pointer' onClick={handleLogout}>
           Log out
         </span>
       </div>

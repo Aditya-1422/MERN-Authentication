@@ -33,7 +33,13 @@ export const login = async (req,res,next) => {
     }
 }
 
-
+export const logout = async (req, res, next) => {
+  try {
+    res.clearCookie("access_token", {httpOnly: true,secure: process.env.SEC,sameSite: 'strict'}).status(200).json({ message: "Logged out successfully!" });
+  } catch (error) {
+    next(errorHandler(500, "Something went wrong!"));
+  }
+};
 export const googlelogin = async (req, res, next) => {
     try {
       const user = await User.findOne({ email: req.body.email }); // Use correct query
