@@ -31,7 +31,7 @@ const Login = () => {
       setMessage('User logged in successfully!');
       setMessageStyle('text-green-500');
       setTimeout(() => {
-        navigate('/home');
+        navigate('/');
       }, 500); 
     } catch (err) {
       dispatch(loginInFailure(err));

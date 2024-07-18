@@ -4,7 +4,7 @@ import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/
 import axios from 'axios';
 import { app } from '../firebase.js';
 import { URL } from '../url.js';
-import { updateUserStart, updateUserSuccess, updateUserFailure, logout } from '../redux/userSlice.js';
+import { updateUserStart, updateUserSuccess, updateUserFailure, logout, deleteUserStart, deleteUserSuccess, deleteUserFailure } from '../redux/userSlice.js';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
@@ -14,10 +14,8 @@ const Profile = () => {
   const [imagePercentage, setImagePercentage] = useState(0);
   const [formData, setFormData] = useState({});
   const [imageError, setImageError] = useState(false);
-  const [updateSuccess, setUpdateSuccess] = useState(false);
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
-
 
   const { currentUser, loading, error } = useSelector((state) => state.user);
 
@@ -75,7 +73,6 @@ const Profile = () => {
       }
 
       dispatch(updateUserSuccess(response.data));
-      setUpdateSuccess(true);
       setMessage('User updated successfully!');
       setTimeout(() => setMessage(null), 500);
     } catch (error) {
@@ -87,14 +84,43 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.get(`${URL}/api/auth/logout`, { withCredentials: true });
-      dispatch(logout())
+      await axios.get(`${URL}/api/auth/logout`, { withCredentials: true });
+      dispatch(logout());
       navigate('/login');
     } catch (error) {
+      console.log("User has not logged out!!");
       setMessage("User has not logged out!!");
       setTimeout(() => {
         setMessage('');
       }, 500);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const response = await axios.delete(`${URL}/api/user/delete/${currentUser._id}`, { withCredentials: true });
+      const data = response.data;
+
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data));
+        setMessage('Something went wrong!');
+        setTimeout(() => setMessage(null), 500);
+        return;
+      }
+
+      dispatch(deleteUserSuccess());
+      console.log('User deleted successfully!');
+      setMessage('User deleted successfully!');
+      setTimeout(() => {
+        setMessage(null);
+        navigate('/');
+      }, 500);
+    } catch (error) {
+      dispatch(deleteUserFailure(error));
+      console.log('Something went wrong!');
+      setMessage('Something went wrong!');
+      setTimeout(() => setMessage(null), 500);
     }
   };
 
@@ -159,7 +185,7 @@ const Profile = () => {
         </button>
       </form>
       <div className='flex justify-between mt-5'>
-        <span className='text-red-700 cursor-pointer'>
+        <span className='text-red-700 cursor-pointer' onClick={handleDeleteUser}>
           Delete Account
         </span>
         <span className='text-red-700 cursor-pointer' onClick={handleLogout}>
