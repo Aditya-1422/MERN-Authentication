@@ -5,10 +5,22 @@ import authRouter from './router/authRouter.js'
 import userRouter from './router/userRouter.js'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import path from 'path'
 
 dotenv.config({path:'./backend/config.env'})
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname,"frontend/build")))
 
+
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, 'frontend/build')));
+  
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(__dirname, 'frontend', 'build', 'index.html'));
+    });
+  }
 const connectDb = () =>{
     mongoose.connect(process.env.MONGO_URI).then(()=>{
         console.log(`Connected to DB!!`)
